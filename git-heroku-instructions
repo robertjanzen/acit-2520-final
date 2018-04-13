@@ -1,0 +1,4 @@
+git init
+git commit -m "First commit"
+git remote add origin https://github.com/robertjanzen/acit-2520-final.git
+git push -u origin master
