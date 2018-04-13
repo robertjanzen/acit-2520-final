@@ -52,7 +52,7 @@ app.use((request, response) => {
 
 // Listen on port 80
 app.listen(port, () => {
-    console.log(`Server is up on the port ${serverPort}`);
+    console.log(`Server is up on the port ${port}`);
 });
 
 // ------------------------------ Functions ----------------------------------//
