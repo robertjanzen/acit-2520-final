@@ -5,7 +5,7 @@ const hbs = require('hbs');
 const fs = require('fs');
 const _ = require('lodash');
 const bodyParser = require('body-parser');
-const serverPort = 8080;
+const serverPort = 80;
 
 // Setup express
 var app = express();
@@ -51,7 +51,7 @@ app.use((request, response) => {
 });
 
 // Listen on port 80
-app.listen(8080, () => {
+app.listen(serverPort, () => {
     console.log(`Server is up on the port ${serverPort}`);
 });
 
