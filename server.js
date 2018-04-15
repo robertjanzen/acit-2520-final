@@ -22,46 +22,46 @@ app.use(bodyParser.urlencoded({
 // })
 
 // -------------------------------- Paths ------------------------------------//
+
 // Main page
 app.get('/', (request, response) => {
   response.render('index.hbs', {
-    render: 'Render'
+    render: 'Weather Report'
   })
 });
 
 // Post to form on main page
 app.post('/', (request, response) => {
 
-  if (request.body.name == '') {
+  if (request.body.loc == '') {
     response.render('index.hbs', {
-      render: 'Render'
     });
   } else {
-    gmaps(request.body.loc).then((coordinates) => {
-      weather(coordinates).then((summary) => {
-        response.render('index.hbs', {
-          render: 'Location Found',
-          loc: summary
-        });
+    gmaps(request.body.location).then((coordinates) => {
+      return weather(coordinates);
+    }).then((result) => {
+      response.render('index.hbs', {
+        location: `Location: ${request.body.location}`,
+        summary: `Summary: ${result['summary']}`,
+        temp: `Temp: ${result['temp']}°C`
       });
+    }).catch((error) => {
+      serverError(response, error);
     });
   }
 });
-
-// .catch(error) => {
-//   serverError(response, error);
-// }
-
-// weather(coordinates).then((summary) => {
-//   response.render('index.hbs', {
-//     render: 'Location Found',
-//     loc: summary
 
 // Handle all other paths and render 404 error page
 app.use((request, response) => {
     response.status(404);
     response.render('404.hbs');
 });
+
+var serverError = (response, errorMsg) => {
+  console.log(errorMsg);
+  response.status(500);
+  response.render('404.hbs');
+}
 
 // Listen on port 80
 app.listen(port, () => {
@@ -70,7 +70,7 @@ app.listen(port, () => {
 
 // ------------------------------ Functions ----------------------------------//
 var gmaps = (location) => {
-  return new Promise(async(resolve, reject) => {
+  return new Promise((resolve, reject) => {
     request({
       url: `http://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}`,
       json: true
@@ -97,7 +97,11 @@ var weather = (cords) => {
       json: true
     }, (error, response, body) => {
       if (!error && response.statusCode === 200) {
-        resolve(body.currently.summary);
+        var temp = _.round((body.currently.temperature - 32.0) * 0.5556);
+        resolve({
+          "summary": body.daily.data[0].summary,
+          "temp": temp
+        });
       } else {
         reject(error);
       }
