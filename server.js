@@ -35,14 +35,27 @@ app.post('/', (request, response) => {
   if (request.body.name == '') {
     response.render('index.hbs', {
       render: 'Render'
-    })
+    });
   } else {
-    response.render('index.hbs', {
-      render: 'Render',
-      name: request.body.name
-    })
+    gmaps(request.body.loc).then((coordinates) => {
+      weather(coordinates).then((summary) => {
+        response.render('index.hbs', {
+          render: 'Location Found',
+          loc: summary
+        });
+      });
+    });
   }
 });
+
+// .catch(error) => {
+//   serverError(response, error);
+// }
+
+// weather(coordinates).then((summary) => {
+//   response.render('index.hbs', {
+//     render: 'Location Found',
+//     loc: summary
 
 // Handle all other paths and render 404 error page
 app.use((request, response) => {
@@ -56,3 +69,38 @@ app.listen(port, () => {
 });
 
 // ------------------------------ Functions ----------------------------------//
+var gmaps = (location) => {
+  return new Promise(async(resolve, reject) => {
+    request({
+      url: `http://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}`,
+      json: true
+    }, (error, response, body) => {
+      if (error) {
+        reject(error);
+      } else if (body.status === 'ZERO_RESULTS') {
+        reject(error);
+      } else if (body.status === 'OK') {
+        var result = {
+          "lat": body.results[0].geometry.location.lat,
+          "lng": body.results[0].geometry.location.lng
+        }
+        resolve(result);
+      }
+    });
+  });
+}
+
+var weather = (cords) => {
+  return new Promise(async(resolve, reject) => {
+    request({
+      url: `https://api.darksky.net/forecast/a05801ddfd47bee6dbc2b05a8877b901/${cords['lat']},${cords['lng']}`,
+      json: true
+    }, (error, response, body) => {
+      if (!error && response.statusCode === 200) {
+        resolve(body.currently.summary);
+      } else {
+        reject(error);
+      }
+    });
+  });
+}
