@@ -33,8 +33,9 @@ app.get('/', (request, response) => {
 // Post to form on main page
 app.post('/', (request, response) => {
 
-  if (request.body.loc == '') {
+  if (request.body.location == '') {
     response.render('index.hbs', {
+      location: `No location entered`
     });
   } else {
     gmaps(request.body.location).then((coordinates) => {
