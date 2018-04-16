@@ -15,6 +15,10 @@ h3 {
   font-size:2.2em;
 }
 
+a {
+  font-size:2em;
+}
+
 #container {
   position:absolute;
   left:0px;
@@ -24,4 +28,9 @@ h3 {
   margin:auto;
   width:80%;
   height:80%;
+}
+
+.pictures {
+  width:40%;
+  padding:10px;
 }

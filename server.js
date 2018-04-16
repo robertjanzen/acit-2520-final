@@ -6,6 +6,20 @@ const fs = require('fs');
 const _ = require('lodash');
 const bodyParser = require('body-parser');
 var port = process.env.PORT || 8080;
+const key = '7246674-b37ac3e55b379cef1f626bb09';
+
+// Weather icons
+const cloud = '/icons/cloud.png';
+const clear_sky = '/icons/clear_sky.png';
+const clear_night = '/icons/clear_night.png'
+const partly_cloudy_day = '/icons/partly_cloudy_day.png';
+// const partly_cloudy_night
+// const heavy_showers
+// const snow
+// const light_showers
+// const fog
+// const wind
+// const thunder
 
 // Setup express
 var app = express();
@@ -15,11 +29,6 @@ app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.urlencoded({
     extended: true
 }));
-
-// ------------------------------- Helpers -----------------------------------//
-// hbs.registerHelper('searchResults', (list) => {
-// return `<a href="/fetchDetails?n=${list.srchList[index]}">Descriptive Text</a>`;
-// })
 
 // -------------------------------- Paths ------------------------------------//
 
@@ -43,8 +52,33 @@ app.post('/', (request, response) => {
     }).then((result) => {
       response.render('index.hbs', {
         location: `Location: ${request.body.location}`,
+        icon: `<img src=/icons/${result['icon']}.png>`,
         summary: `Summary: ${result['summary']}`,
         temp: `Temp: ${result['temp']}°C`
+      });
+    }).catch((error) => {
+      serverError(response, error);
+    });
+  }
+});
+
+app.get('/pics', (request, response) => {
+  response.render('pics.hbs', {
+
+  });
+});
+
+app.post('/pics', (request, response) => {
+  if (request.body.picsentry == '') {
+    response.render('pics.hbs', {
+    });
+  } else {
+    pixabay(request.body.picsentry).then((results) => {
+      response.render('pics.hbs', {
+        pic1: results['pic1'],
+        pic2: results['pic2'],
+        pic3: results['pic3'],
+        pic4: results['pic4']
       });
     }).catch((error) => {
       serverError(response, error);
@@ -70,6 +104,23 @@ app.listen(port, () => {
 });
 
 // ------------------------------ Functions ----------------------------------//
+
+var pixabay = (picturetype) => {
+  return new Promise((resolve, reject) => {
+    request({
+      url: `https://pixabay.com/api/?key=${key}&q=${encodeURIComponent(picturetype)}&image_type=photo`,
+      json: true
+    }, (error, response, body) => {
+      resolve({
+        'pic1': `<img class=pictures src=${body.hits[0].largeImageURL}>`,
+        'pic2': `<img class=pictures src=${body.hits[1].largeImageURL}>`,
+        'pic3': `<img class=pictures src=${body.hits[2].largeImageURL}>`,
+        'pic4': `<img class=pictures src=${body.hits[3].largeImageURL}>`
+      });
+    })
+  })
+}
+
 var gmaps = (location) => {
   return new Promise((resolve, reject) => {
     request({
@@ -101,7 +152,8 @@ var weather = (cords) => {
         var temp = _.round((body.currently.temperature - 32.0) * 0.5556);
         resolve({
           "summary": body.daily.data[0].summary,
-          "temp": temp
+          "temp": temp,
+          "icon": body.currently.icon
         });
       } else {
         reject(error);

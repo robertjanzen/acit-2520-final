@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Index</title>
+		<title>Weather</title>
 		<link rel="stylesheet" href="style.css"></link>
 		<link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
 	</head>
 	<body>
 	   <div id="container">
+			 {{> menu}}
 			 {{> header}}
 				{{> form}}
 				<h3>{{location}}</h3>
+				{{{icon}}}
         <h3>{{summary}}</h3>
 				<h3>{{temp}}</h3>
       </div>
